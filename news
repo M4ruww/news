@@ -1,0 +1,44 @@
+import requests
+from bs4 import BeautifulSoup
+from telegram import Bot, ParseMode
+from telegram.ext import Updater
+
+# Define your Telegram Bot token and chat ID
+BOT_TOKEN = 'YOUR_BOT_TOKEN'
+CHAT_ID = 'YOUR_CHAT_ID'
+
+# Define the URL of the stocks.com news page
+URL = 'https://www.stocks.com/news'
+
+# Send request to the URL and get the response
+response = requests.get(URL)
+
+# Parse the HTML content of the response
+soup = BeautifulSoup(response.content, 'html.parser')
+
+# Find the news articles on the page
+news_articles = soup.find_all('div', class_='news-row')
+
+# Initialize a list to store the news text
+news_list = []
+
+# Loop through the news articles and extract the text
+for article in news_articles:
+    # Extract the title and summary of the article
+    title = article.find('div', class_='title').text.strip()
+    summary = article.find('div', class_='summary').text.strip()
+    
+    # Combine the title and summary
+    news_text = f'<b>{title}</b>\n{summary}\n\n'
+    
+    # Add the news text to the list
+    news_list.append(news_text)
+
+# Convert the list of news text to a single string
+news_text = '\n'.join(news_list)
+
+# Create a Telegram bot instance
+bot = Bot(token=BOT_TOKEN)
+
+# Send the news text to the Telegram channel
+bot.send_message(chat_id=CHAT_ID, text=news_text, parse_mode=ParseMode.HTML)
